@@ -1,0 +1,682 @@
+{% extends "base.html" %}
+
+{% block title%}Search{% endblock %}
+
+{% block headlinks %}
+<!-- Tagify -->
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+
+{% endblock %}
+
+{% block csslocal %}
+.tagify__dropdown.extra-properties .tagify__dropdown__item > img{
+  display: inline-block;
+  vertical-align: middle;
+  height: 20px;
+  transform: scale(.75);
+  margin-right: 5px;
+  border-radius: 2px;
+  transition: .12s ease-out;
+}
+
+.tagify__dropdown.extra-properties .tagify__dropdown__item--active > img,
+.tagify__dropdown.extra-properties .tagify__dropdown__item:hover > img{
+  transform: none;
+  margin-right: 12px;
+}
+
+.tagify.countries .tagify__input{ min-width:175px; }
+
+.tagify.countries tag{ white-space:nowrap; }
+.tagify.countries tag img{
+  display: inline-block;
+  height: 16px;
+  margin-right: 3px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+
+/* stylelint-disable selector-list-comma-newline-after */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+}
+
+.display-4 {
+    font-size: 2.5rem;
+}
+
+@media (min-width: 768px) {
+    .display-4 {
+        font-size: 3rem;
+    }
+}
+
+.nav-scroller {
+    position: relative;
+    z-index: 2;
+    height: 2.75rem;
+    overflow-y: hidden;
+}
+
+.nav-scroller .nav {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: nowrap;
+    flex-wrap: nowrap;
+    padding-bottom: 1rem;
+    margin-top: -1px;
+    overflow-x: auto;
+    text-align: center;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+}
+
+.nav-scroller .nav-link {
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+    font-size: .875rem;
+}
+
+.card-img-right {
+    height: 100%;
+    border-radius: 0 3px 3px 0;
+}
+
+.flex-auto {
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto;
+}
+
+.margin-pattern-left {
+    margin-left: calc(10vw);
+}
+
+@media (max-width: 1024px) {
+    .margin-pattern-left {
+        margin-left: calc(7.5vw);
+    }
+}
+
+.width-pattern {
+    width: calc(60vw)!important;
+}
+
+@media (max-width: 1024px) {
+    .width-pattern {
+        margin-left: calc(75vw) !important;
+    }
+}
+
+.h-150 {
+    height: 152px;
+}
+
+{% endblock %}
+
+{% block scriptblock %}
+var images = [];
+
+function getImages(length) {
+  url = `https://randomuser.me/api/?results=${length}`;
+  $.ajax({
+    url: url,
+    dataType: 'json',
+    success: function(data) {
+      images = data.results;
+      console.log(`Got ${images.length} images from ${url}`);
+    }
+  });
+}
+getImages(2000);
+
+var dataSet = [];
+
+function getTagsFromElement(tagElem) {
+  tags = [];
+  if (tagElem === null || tagElem.value == "") { return tags; }
+  console.log(`tagElem.value = ${tagElem.value}`);
+  js = JSON.parse(tagElem.value);
+  
+  for (const element of js) {
+    tags.push(element.value);
+  }
+  console.log(`tags = ${tags}`);
+  return tags;
+}
+
+function csrfSafeMethod(method) {
+  // these HTTP methods do not require CSRF protection
+  return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+function processForm(event) {
+    event.preventDefault();
+    var finalTags = [];
+    gender = document.querySelector('select[id=gender]').value;
+    if (gender !== '') {
+      finalTags = finalTags.concat([gender]);
+    }
+    finalTags = finalTags.concat(getTagsFromElement(document.querySelector('input[id=country]')));
+    finalTags = finalTags.concat(getTagsFromElement(document.querySelector('input[id=tags]')));
+    cleanTags = new Set(finalTags);
+    finalTags = [...cleanTags].sort();
+
+    console.log(`Final set of tags: ${finalTags}, length=${finalTags.length}`);
+    if (finalTags.length == 0) {
+      return;
+    }
+    var csrfToken = getCookie('csrftoken');
+    var headers = new Headers();
+    headers.append('X-CSRFToken', csrfToken);
+    console.log(`csrfToken = ${csrfToken}`);
+
+    $.ajaxSetup({
+      beforeSend: function(xhr, settings) {
+          if (!csrfSafeMethod(settings.type) && !$(this).crossDomain) {
+              xhr.setRequestHeader("X-CSRFToken", csrfToken);
+          }
+      }
+    });    
+    $.ajax({
+      type: "POST",
+      url: "/search/",
+      headers: headers,
+      crossDomain: false, 
+      contentType: "json",
+      data: JSON.stringify({tags: finalTags}),
+      success: function( data ) {
+          console.log(`Got ${data}`);
+          dataSet = data;
+          buildResults(20, 1)
+      }
+  });
+
+
+}
+
+{% endblock %}
+
+
+{% block rightpanel %}
+<form>
+  {% csrf_token %}
+  <div class="form-group row">
+    <label for="gender" class="col-3 col-form-label">Gender</label> 
+    <div class="col-9">
+      <select id="gender" name="gender" class="custom-select form-control form-control-lg form-control-solid">
+        <option value=""></option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="trans">Trans</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label for="country" class="col-3 col-form-label">Country</label> 
+    <div class="col-9">
+      <input id="country" name="country" type="text" class="countries" /> <!--class="form-control form-control-lg form-control-solid d-flex align-items-center">-->
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label for="tags" class="col-3 col-form-label">I like</label> 
+    <div class="col-9">
+      <input name="tags" id="tags" class="countries" />
+    </div>
+  </div> 
+  <div class="form-group row">
+    <div class="offset-3 col-9">
+      <button name="submit" type="submit" id="btn" class="btn btn-primary">Submit</button>
+    </div>
+  </div>
+</form>
+
+
+
+<div class="container bg-light border border-secondary">
+  <div class="p-3 m-3" id="results">
+    
+  </div>
+</div>
+
+<!-- modals -->
+<div class="modal fade image-modal" style="overflow-y:unset;" id="imageModal" tabindex="-1" aria-labelledby="modal-img-title" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 id="modal-img-title"></h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-0 text-center">
+              <img id="modal-img" src="" class="img-fluid" style="height: 80vh; padding-top: 2px;">
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade description-modal" id="descriptionModal" tabindex="-1" aria-labelledby="modal-detail-title" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 id="modal-detail-title"></h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <p id="modal-detail" style="scroll-behavior: unset;">
+              </p>
+          </div>
+      </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block postload_script %}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          // Does $(this) cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}
+
+$( "#btn" ).on( "click", processForm );
+
+function createTags(data) {
+    console.log(`Using ${data.length} tags`)
+    var input = document.querySelector('input[id=tags]'),
+        search_terms = new Tagify(input, {
+            enforceWhitelist : true,
+            delimiters       : null,
+            whitelist        : data,
+            callbacks        : {
+                add    : console.log,  // callback when adding a tag
+                remove : console.log   // callback when removing a tag
+            }
+        });
+}
+
+$.getJSON( "/xselect/taglist/", function( data ) {
+  createTags(data)
+});
+
+var countries = new Tagify(document.querySelector('input[name=country]'), {
+  delimiters : null,
+  templates : {
+      tag : function(tagData){
+          try{
+              return `<tag title='${tagData.value}' contenteditable='false' spellcheck="false" class='tagify__tag ${tagData.class ? tagData.class : ""}' ${this.getAttributes(tagData)}>
+                      <x title='remove tag' class='tagify__tag__removeBtn'></x>
+                      <div>
+                          ${tagData.code ?
+                          `<img onerror="$(this).style.visibility='hidden'" src='https://flagicons.lipis.dev/flags/4x3/${tagData.code.toLowerCase()}.svg'>` : ''
+                          }
+                          <span class='tagify__tag-text'>${tagData.value}</span>
+                      </div>
+                  </tag>`
+          }
+          catch(err){}
+      },
+
+      dropdownItem : function(tagData){
+          try{
+              return `<div ${this.getAttributes(tagData)} class='tagify__dropdown__item ${tagData.class ? tagData.class : ""}' >
+                          <img onerror="$(this).style.visibility = 'hidden'"
+                              src='https://flagicons.lipis.dev/flags/4x3/${tagData.code.toLowerCase()}.svg'>
+                          <span>${tagData.value}</span>
+                      </div>`
+          }
+          catch(err){ console.error(err)}
+      }
+  },
+  enforceWhitelist : true,
+  whitelist : [
+    { value:'Afghanistan', code:'AF' },
+    { value:'Åland Islands', code:'AX' },
+    { value:'Albania', code:'AL' },
+    { value:'Algeria', code:'DZ' },
+    { value:'American Samoa', code:'AS' },
+    { value:'Andorra', code:'AD' },
+    { value:'Angola', code:'AO' },
+    { value:'Anguilla', code:'AI' },
+    { value:'Antarctica', code:'AQ' },
+    { value:'Antigua and Barbuda', code:'AG' },
+    { value:'Argentina', code:'AR' },
+    { value:'Armenia', code:'AM' },
+    { value:'Aruba', code:'AW' },
+    { value:'Australia', code:'AU' },
+    { value:'Austria', code:'AT' },
+    { value:'Azerbaijan', code:'AZ' },
+    { value:'Bahamas', code:'BS' },
+    { value:'Bahrain', code:'BH' },
+    { value:'Bangladesh', code:'BD' },
+    { value:'Barbados', code:'BB' },
+    { value:'Belarus', code:'BY' },
+    { value:'Belgium', code:'BE' },
+    { value:'Belize', code:'BZ' },
+    { value:'Benin', code:'BJ' },
+    { value:'Bermuda', code:'BM' },
+    { value:'Bhutan', code:'BT' },
+    { value:'Bolivia', code:'BO' },
+    { value:'Bosnia and Herzegovina', code:'BA' },
+    { value:'Botswana', code:'BW' },
+    { value:'Bouvet Island', code:'BV' },
+    { value:'Brazil', code:'BR' },
+    { value:'British Indian Ocean Territory', code:'IO' },
+    { value:'Brunei Darussalam', code:'BN' },
+    { value:'Bulgaria', code:'BG' },
+    { value:'Burkina Faso', code:'BF' },
+    { value:'Burundi', code:'BI' },
+    { value:'Cambodia', code:'KH' },
+    { value:'Cameroon', code:'CM' },
+    { value:'Canada', code:'CA' },
+    { value:'Cape Verde', code:'CV' },
+    { value:'Cayman Islands', code:'KY' },
+    { value:'Central African Republic', code:'CF' },
+    { value:'Chad', code:'TD' },
+    { value:'Chile', code:'CL' },
+    { value:'China', code:'CN' },
+    { value:'Christmas Island', code:'CX' },
+    { value:'Cocos (Keeling) Islands', code:'CC' },
+    { value:'Colombia', code:'CO' },
+    { value:'Comoros', code:'KM' },
+    { value:'Congo', code:'CG' },
+    { value:'Congo, The Democratic Republic of the', code:'CD' },
+    { value:'Cook Islands', code:'CK' },
+    { value:'Costa Rica', code:'CR' },
+    { value:'Cote D\'Ivoire', code:'CI' },
+    { value:'Croatia', code:'HR' },
+    { value:'Cuba', code:'CU' },
+    { value:'Cyprus', code:'CY' },
+    { value:'Czech Republic', code:'CZ' },
+    { value:'Denmark', code:'DK' },
+    { value:'Djibouti', code:'DJ' },
+    { value:'Dominica', code:'DM' },
+    { value:'Dominican Republic', code:'DO' },
+    { value:'Ecuador', code:'EC' },
+    { value:'Egypt', code:'EG' },
+    { value:'El Salvador', code:'SV' },
+    { value:'Equatorial Guinea', code:'GQ' },
+    { value:'Eritrea', code:'ER' },
+    { value:'Estonia', code:'EE' },
+    { value:'Ethiopia', code:'ET' },
+    { value:'Falkland Islands (Malvinas)', code:'FK' },
+    { value:'Faroe Islands', code:'FO' },
+    { value:'Fiji', code:'FJ' },
+    { value:'Finland', code:'FI' },
+    { value:'France', code:'FR' },
+    { value:'French Guiana', code:'GF' },
+    { value:'French Polynesia', code:'PF' },
+    { value:'French Southern Territories', code:'TF' },
+    { value:'Gabon', code:'GA' },
+    { value:'Gambia', code:'GM' },
+    { value:'Georgia', code:'GE' },
+    { value:'Germany', code:'DE' },
+    { value:'Ghana', code:'GH' },
+    { value:'Gibraltar', code:'GI' },
+    { value:'Great Britain', code:'GB' },
+    { value:'Greece', code:'GR' },
+    { value:'Greenland', code:'GL' },
+    { value:'Grenada', code:'GD' },
+    { value:'Guadeloupe', code:'GP' },
+    { value:'Guam', code:'GU' },
+    { value:'Guatemala', code:'GT' },
+    { value:'Guernsey', code:'GG' },
+    { value:'Guinea', code:'GN' },
+    { value:'Guinea-Bissau', code:'GW' },
+    { value:'Guyana', code:'GY' },
+    { value:'Haiti', code:'HT' },
+    { value:'Heard Island and Mcdonald Islands', code:'HM' },
+    { value:'Holy See (Vatican City State)', code:'VA' },
+    { value:'Honduras', code:'HN' },
+    { value:'Hong Kong', code:'HK' },
+    { value:'Hungary', code:'HU' },
+    { value:'Iceland', code:'IS' },
+    { value:'India', code:'IN' },
+    { value:'Indonesia', code:'ID' },
+    { value:'Iran, Islamic Republic Of', code:'IR' },
+    { value:'Iraq', code:'IQ' },
+    { value:'Ireland', code:'IE' },
+    { value:'Isle of Man', code:'IM' },
+    { value:'Israel', code:'IL' },
+    { value:'Italy', code:'IT' },
+    { value:'Jamaica', code:'JM' },
+    { value:'Japan', code:'JP' },
+    { value:'Jersey', code:'JE' },
+    { value:'Jordan', code:'JO' },
+    { value:'Kazakhstan', code:'KZ' },
+    { value:'Kenya', code:'KE' },
+    { value:'Kiribati', code:'KI' },
+    { value:'Korea, Democratic People\'S Republic of', code:'KP' },
+    { value:'Korea, Republic of', code:'KR' },
+    { value:'Kuwait', code:'KW' },
+    { value:'Kyrgyzstan', code:'KG' },
+    { value:'Lao People\'S Democratic Republic', code:'LA' },
+    { value:'Latvia', code:'LV' },
+    { value:'Lebanon', code:'LB' },
+    { value:'Lesotho', code:'LS' },
+    { value:'Liberia', code:'LR' },
+    { value:'Libyan Arab Jamahiriya', code:'LY' },
+    { value:'Liechtenstein', code:'LI' },
+    { value:'Lithuania', code:'LT' },
+    { value:'Luxembourg', code:'LU' },
+    { value:'Macao', code:'MO' },
+    { value:'Macedonia, The Former Yugoslav Republic of', code:'MK' },
+    { value:'Madagascar', code:'MG' },
+    { value:'Malawi', code:'MW' },
+    { value:'Malaysia', code:'MY' },
+    { value:'Maldives', code:'MV' },
+    { value:'Mali', code:'ML' },
+    { value:'Malta', code:'MT' },
+    { value:'Marshall Islands', code:'MH' },
+    { value:'Martinique', code:'MQ' },
+    { value:'Mauritania', code:'MR' },
+    { value:'Mauritius', code:'MU' },
+    { value:'Mayotte', code:'YT' },
+    { value:'Mexico', code:'MX' },
+    { value:'Micronesia, Federated States of', code:'FM' },
+    { value:'Moldova, Republic of', code:'MD' },
+    { value:'Monaco', code:'MC' },
+    { value:'Mongolia', code:'MN' },
+    { value:'Montenegro', code:'ME' },
+    { value:'Montserrat', code:'MS' },
+    { value:'Morocco', code:'MA' },
+    { value:'Mozambique', code:'MZ' },
+    { value:'Myanmar', code:'MM' },
+    { value:'Namibia', code:'NA' },
+    { value:'Nauru', code:'NR' },
+    { value:'Nepal', code:'NP' },
+    { value:'Netherlands', code:'NL' },
+    { value:'Netherlands Antilles', code:'AN' },
+    { value:'New Caledonia', code:'NC' },
+    { value:'New Zealand', code:'NZ' },
+    { value:'Nicaragua', code:'NI' },
+    { value:'Niger', code:'NE' },
+    { value:'Nigeria', code:'NG' },
+    { value:'Niue', code:'NU' },
+    { value:'Norfolk Island', code:'NF' },
+    { value:'Northern Mariana Islands', code:'MP' },
+    { value:'Norway', code:'NO' },
+    { value:'Oman', code:'OM' },
+    { value:'Pakistan', code:'PK' },
+    { value:'Palau', code:'PW' },
+    { value:'Palestinian Territory, Occupied', code:'PS' },
+    { value:'Panama', code:'PA' },
+    { value:'Papua New Guinea', code:'PG' },
+    { value:'Paraguay', code:'PY' },
+    { value:'Peru', code:'PE' },
+    { value:'Philippines', code:'PH' },
+    { value:'Pitcairn', code:'PN' },
+    { value:'Poland', code:'PL' },
+    { value:'Portugal', code:'PT' },
+    { value:'Puerto Rico', code:'PR' },
+    { value:'Qatar', code:'QA' },
+    { value:'Reunion', code:'RE' },
+    { value:'Romania', code:'RO' },
+    { value:'Russian Federation', code:'RU' },
+    { value:'RWANDA', code:'RW' },
+    { value:'Saint Helena', code:'SH' },
+    { value:'Saint Kitts and Nevis', code:'KN' },
+    { value:'Saint Lucia', code:'LC' },
+    { value:'Saint Pierre and Miquelon', code:'PM' },
+    { value:'Saint Vincent and the Grenadines', code:'VC' },
+    { value:'Samoa', code:'WS' },
+    { value:'San Marino', code:'SM' },
+    { value:'Sao Tome and Principe', code:'ST' },
+    { value:'Saudi Arabia', code:'SA' },
+    { value:'Senegal', code:'SN' },
+    { value:'Serbia', code:'RS' },
+    { value:'Seychelles', code:'SC' },
+    { value:'Sierra Leone', code:'SL' },
+    { value:'Singapore', code:'SG' },
+    { value:'Slovakia', code:'SK' },
+    { value:'Slovenia', code:'SI' },
+    { value:'Solomon Islands', code:'SB' },
+    { value:'Somalia', code:'SO' },
+    { value:'South Africa', code:'ZA' },
+    { value:'South Georgia and the South Sandwich Islands', code:'GS' },
+    { value:'Spain', code:'ES' },
+    { value:'Sri Lanka', code:'LK' },
+    { value:'Sudan', code:'SD' },
+    { value:'Suriname', code:'SR' },
+    { value:'Svalbard and Jan Mayen', code:'SJ' },
+    { value:'Swaziland', code:'SZ' },
+    { value:'Sweden', code:'SE' },
+    { value:'Switzerland', code:'CH' },
+    { value:'Syrian Arab Republic', code:'SY' },
+    { value:'Taiwan', code:'TW' },
+    { value:'Tajikistan', code:'TJ' },
+    { value:'Tanzania, United Republic of', code:'TZ' },
+    { value:'Thailand', code:'TH' },
+    { value:'Timor-Leste', code:'TL' },
+    { value:'Togo', code:'TG' },
+    { value:'Tokelau', code:'TK' },
+    { value:'Tonga', code:'TO' },
+    { value:'Trinidad and Tobago', code:'TT' },
+    { value:'Tunisia', code:'TN' },
+    { value:'Turkey', code:'TR' },
+    { value:'Turkmenistan', code:'TM' },
+    { value:'Turks and Caicos Islands', code:'TC' },
+    { value:'Tuvalu', code:'TV' },
+    { value:'Uganda', code:'UG' },
+    { value:'Ukraine', code:'UA' },
+    { value:'United Arab Emirates', code:'AE' },
+    { value:'United Kingdom', code:'GB' },
+    { value:'United States', code:'US' },
+    { value:'United States Minor Outlying Islands', code:'UM' },
+    { value:'Uruguay', code:'UY' },
+    { value:'Uzbekistan', code:'UZ' },
+    { value:'Vanuatu', code:'VU' },
+    { value:'Venezuela', code:'VE' },
+    { value:'Viet Nam', code:'VN' },
+    { value:'Virgin Islands, British', code:'VG' },
+    { value:'Virgin Islands, U.S.', code:'VI' },
+    { value:'Wallis and Futuna', code:'WF' },
+    { value:'Western Sahara', code:'EH' },
+    { value:'Yemen', code:'YE' },
+    { value:'Zambia', code:'ZM' },
+    { value:'Zimbabwe', code:'ZW' }
+  ],
+  dropdown : {
+      enabled: 1, // suggest tags after a single character input
+      classname : 'extra-properties' // custom class for the suggestions dropdown
+  } // map tags' values to $(this) property name, so $(this) property will be the actual value and not the printed value on the screen
+})
+
+countries.on('click', function(e){
+  console.log(e.detail);
+});
+
+countries.on('remove', function(e){
+  console.log(e.detail);
+});
+
+countries.on('add', function(e){
+  console.log( "original Input:", countries.DOM.originalInput);
+  console.log( "original Input's value:", countries.DOM.originalInput.value);
+  console.log( "event detail:", e.detail);
+});
+
+$(".image-modal").on('show.bs.modal', function(event) {
+  var img = event.relatedTarget;
+  var index = img.getAttribute('data-index');
+  console.log(`index = ${index}`);
+  var modalTitle = document.getElementById('modal-img-title')
+  modalTitle.textContent = dataSet[index].user_name
+  var modalImg = document.getElementById('modal-img')
+  modalImg.src = img.getAttribute('src');
+});
+
+$(".description-modal").on('show.bs.modal', function(event) {
+  var text = event.relatedTarget;
+  var index = text.getAttribute('data-index');
+  var title = document.getElementById('modal-detail-title')
+  title.innerText = dataSet[index].user_name;
+  var proposalDetails = document.getElementById('modal-detail')
+  proposalDetails.innerText = dataSet[index].description;
+});
+
+function ellipsis(text) {
+    var value;
+    if (text.length > 250) {
+        value = text.slice(0, 250);
+        value = value + "...";
+    } else {
+        value = text;
+    }
+    return value;
+}
+
+
+function buildResults(page_size, page_nr) {
+  var template = `
+<div class="row margin-pattern-left mt-5">
+    <div class="col-lg-9 col-10">
+        <div class="row no-gutters overflow-hidden over flex-md-row mb-4 shadow-sm h-md-150 position-relative">
+            <div class="col-auto">
+                <img src="%img%" class="img-fluid rounded rounded-circle img-modal" style="width: 150px; height: 150px;padding-top: 2px;" alt="%user_name%" data-bs-toggle="modal" data-bs-target="#imageModal" data-img-src="%img%" data-index="%index%" data-user-name="%user_name%" />
+            </div>
+            <div class="col pb-4 pl-4 pt-2 d-flex flex-column position-static">
+                <a href="https://onlyfans.com/%account%" target="_blank"><strong class="d-inline-block mb-1 text-success">onlyfans.com</strong></a>
+                <h4 class="mb-0">%user_name%</h4>
+                <span id="details" class="mb-auto description-modal" style="overflow:hidden;text-overflow:ellipsis; max-height: 75px;" data-bs-toggle="modal" data-bs-target="#descriptionModal"  data-index="%index%">
+                %description-ellipsis%
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+`;
+  var out = [];
+  start = page_size * (page_nr-1);
+  end = Math.min(start + page_size, dataSet.length);
+  for (i=start; i < end; i++) {
+    res = dataSet[i];
+    row = template.replaceAll("%account%", res.account).replaceAll("%img%", images[i].picture.large);
+    row = row.replaceAll("%user_name%", res.user_name).replaceAll("%description-ellipsis%", ellipsis(res.description));
+    row = row.replaceAll("%index%", i)
+    out.push(row);
+  }
+  $("#results").html(out.join("\r\n\r\n"));
+}
+
+{% endblock %}

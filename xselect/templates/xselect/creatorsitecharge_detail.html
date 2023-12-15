@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<p><a class="btn btn-default" href="{% url 'creatorsitecharge_list' %}">CreatorSiteAccountCharge Listing</a></p>
+<table class="table">
+<tr><td>created</td><td>{{ object.created }}</td></tr>
+<tr><td>last_updated</td><td>{{ object.last_updated }}</td></tr>
+<tr><td>description</td><td>{{ object.description }}</td></tr>
+<tr><td>currency</td><td>{{ object.currency }}</td></tr>
+<tr><td>frequency</td><td>{{ object.frequency }}</td></tr>
+</table>
+<a class="btn btn-primary" href="{{object.get_update_url}}">Edit CreatorSiteAccountCharge</a>
+
+{% endblock %}

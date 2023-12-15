@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<p><a class="btn btn-default" href="{% url 'creatorphoto_list' %}">CreatorPhoto Listing</a></p>
+<table class="table">
+<tr>
+<td>ID</td><td>Link</td>
+    <td>slug</td>
+    <td>created</td>
+    <td>last_updated</td>
+    <td>url</td>
+    <td>deleted</td>
+</tr>
+{% for object in object_list %}
+<tr>
+    <td>{{object.pk}}</td>
+    <td><a href="{{object.get_absolute_url}}">{{object}}</a></td>
+    <td>{{ object.slug }}</td>
+    <td>{{ object.created }}</td>
+    <td>{{ object.last_updated }}</td>
+    <td>{{ object.url }}</td>
+    <td>{{ object.deleted }}</td>
+</tr>
+{% endfor %}
+</table><a class="btn btn-primary" href="{% url 'creatorphoto_create' %}">Create new CreatorPhoto</a>
+{% endblock %}

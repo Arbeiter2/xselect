@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+
+{% block csslocal %}
+{% endblock %}
+
+{% block leftpanel %}<!-- left panel text -->{% endblock %}
+
+
+{% block rightpanel %}
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
+  {% for account in results %}
+  <div class="col mb-4">
+    <div class="card">
+      <img src="{{ account.img }}" class="card-img-top" alt="{{ account.name }}">
+      <div class="card-body">
+        <h5 class="card-title">{{ account.name }}</h5>
+        <p class="card-text">{{ account.description }}</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

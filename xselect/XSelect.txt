@@ -1,0 +1,128 @@
+# XSelect
+
+(O) = optional
+(N) = 0+
+
+*User*
+    - username
+    - email
+    - payment details
+
+*Creator*
+    - photo
+    - location
+    - gender
+    - description
+
+
+*Site*:
+    - URL
+
+*CreatorAccount*
+    - site
+    - username
+    - photo (N)
+    - date_added
+    - is_active
+
+*CreatorAccountCharge*
+    - CreatorAccount
+    - description
+    - charge_type [weekly, monthly, prorata, free]
+    - amount
+    - date_added
+
+
+*CreatorPhoto*
+    - Creator
+    - location
+    - is_sfw (bool)
+
+*CreatorAccountPhoto*
+    - CreatorAccount
+    - location
+    - is_sfw (bool)
+
+*CreatorAccountPost*:
+    - CreatorAccount
+    - type (photo/video/audio)
+    - description
+    - tags (N) (derived from description)
+    - photo
+
+*CreatorAccountDiscount*:
+    - CreatorAccount
+    - start_date
+    - end_date
+    - refcode (O)
+
+***
+
+*Consumer*
+    - gender (O)
+    - location (O)
+    - interests (N) (free keywords)
+    - avatar (preset range, or user-specified)
+
+*ConsumerFavouriteCreator*
+    - Consumer
+    - Creator (N)
+    - date_added
+    - date_deleted
+    - notes (searchable)
+    - rating (1-5) (O)
+
+*ConsumerFavouritePost*
+    - Consumer
+    - CreatorAccountPost (N)
+    - date_added
+    - date_deleted
+    - notes (searchable)
+    - rating (1-5) (O)
+
+*ConsumerSavedSearch*
+    - Consumer
+    - keywords (N)
+    - date_added
+    - date_deleted
+
+*ConsumerHistory* (max 90 days or something)
+    - Consumer
+    - CreatorAccount
+    - date_added
+    - last_viewed
+
+***
+
+*ConsumerRecommendation*
+    - Consumer
+    - CreatorAccount
+    - date_added
+
+*FeaturedCreator*
+    - CreatorAccount
+    - date_added
+    - is_active
+
+***
+
+*ContentTheme*
+    - text
+
+*Attribute"
+    - name
+    - type
+    - units
+
+*ObjectAttribute*
+    - ObjectClassName
+    - object_id (not null)
+    - Attribute
+    - value (str)
+
+
+# General
+
+Recycle keyword search from techkno.io
+
+Seed keywords from pornhub, etc
