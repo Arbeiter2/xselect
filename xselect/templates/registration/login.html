@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title%}Login{% endblock %}
+
+{% block headlinks %}{% endblock %}
+
+{% block csslocal %}
+.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+    color: #fff;
+    background-color: #aaabbd;
+}
+input[type="text"], input[type="password"], .btn{
+  border-radius: 10px;
+}
+{% endblock %}
+  
+
+{% block rightpanel %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-4 offset-md-4">
+        <ul class="nav nav-pills nav-fill mb-1" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="pills-login-tab" data-bs-toggle="pill" data-bs-target="#pills-login" type="button" role="tab" aria-controls="pills-login" aria-selected="true">Login</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="pills-register-tab" data-bs-toggle="pill" data-bs-target="#pills-register" type="button" role="tab" aria-controls="pills-register" aria-selected="false">Register</button>
+            </li>
+          </ul>
+          <div class="tab-content" id="pills-tabContent">
+            <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="a">
+                <form id="login">
+                    {% csrf_token %}
+                    <fieldset>
+                        <div class="input-group my-3">
+                            <span class="input-group-text" id="login-email-icon"><i class="fs-3 bi-envelope"></i></span>
+                            <input type="text" id="login_email" class="form-control input-lg" placeholder="email" aria-label="email" aria-describedby="login-email-icon" />
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-text" id="login-key-icon"><i class="fs-3 bi-key"></i></span>
+                            <input type="password" id="login_password" class="form-control input-lg" placeholder="password" aria-label="password" aria-describedby="login-password-icon" />
+                        </div>
+                    </fieldset>
+                    <br>
+                    <div class="text-center">
+                        <button class="btn btn-outline-primary" id="login-btn"><span class="fs-3 bi-person pr-3"></span>&nbsp;Login</button>
+                    </div>
+                <form>                 
+            </div>
+            <div class="tab-pane fade" id="pills-register" role="tabpanel" aria-labelledby="pills-register-tab">
+                <form id="register">
+                {% csrf_token %}
+                    <fieldset>
+                        <div class="input-group my-3">
+                            <span class="input-group-text" id="register-username-icon"><i class="fs-3 bi-person"></i></span>
+                            <input type="text" class="form-control input-lg" placeholder="User Name" id="register_user_name" aria-label="User Name" aria-describedby="login-username-icon" />
+                        </div>
+                        <div class="input-group my-3">
+                            <span class="input-group-text" id="register-email-icon"><i class="fs-3 bi-envelope"></i></span>
+                            <input type="text" class="form-control input-lg" placeholder="Email" id="register_email" aria-label="Email" aria-describedby="register-email-icon" >
+                        </div>
+                        <div class="input-group my-3">
+                            <span class="input-group-text" id="register-password-icon"><i class="fs-3 bi-key"></i></span>
+                            <input type="password" class="form-control input-lg" id="register_password" placeholder="Password (minimum 8 characters)" aria-label="password" aria-describedby="register-password-icon">
+                        </div>
+                        <div class="input-group my-3">
+                            <span class="input-group-text" id="register-confirm-icon"><i class="fs-3 bi-key"></i></span>
+                            <input type="password" class="form-control input-lg" placeholder="Confirm Password" id="confirm_password" aria-label="confirm password" aria-describedby="register-confirm-icon">
+                        </div>
+                    </fieldset>
+                    <br>
+                    <div class="text-center">
+                        <button class="btn btn-outline-success" id="register-btn"><span class="fs-3 bi-person-fill-add pr-3"></span>&nbsp;Register</button>
+                    </div>
+                </form>
+            </div>
+          </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs content -->
+{% endblock %}

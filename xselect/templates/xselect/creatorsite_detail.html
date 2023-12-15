@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<p><a class="btn btn-default" href="{% url 'creatorsite_list' %}">CreatorSiteAccount Listing</a></p>
+<table class="table">
+<tr><td>created</td><td>{{ object.created }}</td></tr>
+<tr><td>last_updated</td><td>{{ object.last_updated }}</td></tr>
+<tr><td>account</td><td>{{ object.account }}</td></tr>
+<tr><td>is_active</td><td>{{ object.is_active }}</td></tr>
+<tr><td>photo</td><td>{{ object.photo }}</td></tr>
+<tr><td>description</td><td>{{ object.description }}</td></tr>
+</table>
+<a class="btn btn-primary" href="{{object.get_update_url}}">Edit CreatorSiteAccount</a>
+
+{% endblock %}

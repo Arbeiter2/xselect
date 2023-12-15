@@ -1,0 +1,5 @@
+colorama==0.4.4
+selenium==4.8.1
+undetected-chromedriver==3.5.3
+webdriver-manager=4.0.0
+

@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>XSELECT - {% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.2/font/bootstrap-icons.min.css" integrity="sha512-D1liES3uvDpPrgk7vXR/hR/sukGn7EtDWEyvpdLsyalQYq6v6YUsTUJmku7B4rcuQ21rf0UTksw2i/2Pdjbd3g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha512-3P8rXCuGJdNZOnUx/03c1jOTnMn3rP63nBip5gOP2qmUh5YAdVAvFZ1E+QLZZbC1rtMrQb+mah3AfYW11RUrWA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+    {% block headlinks %}
+    {% endblock %}
+  
+    <style type="text/css">
+        @media (max-width: 576px) {  
+            .xs {color:red;font-weight:bold;}
+        }
+        
+        /* Small devices (landscape phones, 576px and up) */
+        @media (min-width: 576px) and (max-width:768px) {  
+            .sm {color:red;font-weight:bold;}
+        }
+        
+        /* Medium devices (tablets, 768px and up) The navbar toggle appears at this breakpoint */
+        @media (min-width: 768px) and (max-width:992px) {  
+            .md {color:red;font-weight:bold;}
+        }
+        
+        /* Large devices (desktops, 992px and up) */
+        @media (min-width: 992px) and (max-width:1200px) { 
+            .lg {color:red;font-weight:bold;}
+        }
+        
+        /* Extra large devices (large desktops, 1200px and up) */
+        @media (min-width: 1200px) {  
+            .xl {color:red;font-weight:bold;}
+        }
+        body{margin-top:20px;
+          background:#eee;
+          font-family: Tahoma, sans-serif;
+        }
+        
+        .btn {
+            margin-bottom: 5px;
+        }
+        
+        .grid {
+            position: relative;
+            width: 100%;
+            background: #fff;
+            color: #666666;
+            border-radius: 2px;
+            margin-bottom: 25px;
+            box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .grid .grid-body {
+            padding: 15px 20px 15px 20px;
+            font-size: 0.9em;
+            line-height: 1.9em;
+        }
+
+        {% block csslocal %}
+        {% endblock %}
+    </style>
+
+    <script>
+      {% block scriptblock %}
+      {% endblock %}
+    </script>
+</head>
+<body>
+<div class="container">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+      <img src="https://dummyimage.com/200x50&text=XSELECT" alt="xselect.me" height="24" class="d-inline-block align-text-top">
+    </a>
+      
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-tar="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="navbar-nav">
+        <a class="nav-link active" aria-current="page" href="#">Search</a>
+        <a class="nav-link" href="/favorites">Favorites</a>
+        <a class="nav-link" href="/pricing">Pricing</a>
+        <a href="/account" title="" class="nav-link"><i class="bi-person"></i></a>
+      </div>
+    </div>
+  </nav>
+<div class="row">
+  <!-- BEGIN CONTENT -->
+  <div class="col-md-12">
+    <div class="grid">
+      <div class="grid-body">
+        <div class="row">
+            <div class="col-12">
+            {% block rightpanel %}<!-- right panel text -->{% endblock %}
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END CONTENT -->
+</div>
+</div>
+<footer class="py-5 bg-dark">
+    <div class="container"><p class="m-0 text-center text-white">Copyright xselect.io &copy; 2023</p></div>
+</footer>
+
+<script type="text/javascript">
+{% block postload_script %}
+{% endblock %}
+</script>
+</body>
+</html>

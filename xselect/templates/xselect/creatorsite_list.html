@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<p><a class="btn btn-default" href="{% url 'creatorsite_list' %}">CreatorSiteAccount Listing</a></p>
+<table class="table">
+<tr>
+<td>ID</td><td>Link</td>
+    <td>created</td>
+    <td>last_updated</td>
+    <td>account</td>
+    <td>is_active</td>
+    <td>photo</td>
+    <td>description</td>
+</tr>
+{% for object in object_list %}
+<tr>
+    <td>{{object.pk}}</td>
+    <td><a href="{{object.get_absolute_url}}">{{object}}</a></td>
+    <td>{{ object.created }}</td>
+    <td>{{ object.last_updated }}</td>
+    <td>{{ object.account }}</td>
+    <td>{{ object.is_active }}</td>
+    <td>{{ object.photo }}</td>
+    <td>{{ object.description }}</td>
+</tr>
+{% endfor %}
+</table><a class="btn btn-primary" href="{% url 'creatorsite_create' %}">Create new CreatorSiteAccount</a>
+{% endblock %}
